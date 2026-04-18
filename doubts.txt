@@ -1,0 +1,9 @@
+1. why should my number of queue.put() calls be the same as queue.task_done() calls? in the event that my queue item is not properly consumed (queue.put() called but queue.task_done() not called), what happens then? Does the item go back in queue?
+-> Here's what actually happens when you have populated queue and are now consuming items..
+
+q.size() = 5 # initially
+
+here, the q maintains a count called 'unfinished_tasks' (accessible via q.unfinished_tasks) = 5.
+
+every q.task_done() operation decrements unfinished_tasks, that's all.
+every q.put() operation increments unfinished_tasks
