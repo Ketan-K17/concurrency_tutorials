@@ -1,13 +1,17 @@
-from urllib.request import Request, urlopen, urljoin, URLError
-from urllib.parse import urlparse
+from urllib.request import Request, urlopen
+from urllib.parse import urlparse, urljoin
+from urllib.error import URLError
 import ssl
 from bs4 import BeautifulSoup
+from queue import Queue
+
 class Crawler:
     base_url = ''
     myssl = ssl.create_default_context()
     myssl.check_hostname=False
     myssl.verify_mode=ssl.CERT_NONE
-    errorLinks = set
+    errorLinks = set()
+    crawledLinks = set()
 
     def __init__(self, base_url):
         Crawler.base_url = base_url
@@ -17,7 +21,7 @@ class Crawler:
         try:
             link = urljoin(Crawler.base_url, url)
 
-            if (urlparse(link).netloc == 'tutorialedge.net') and (link not in Crawler.crawledLinks):
+            if (urlparse(link).netloc == urlparse(Crawler.base_url).netloc) and (link not in Crawler.crawledLinks):
                 request = Request(link, headers={'User-Agent': 'Mozilla/5.0'})
                 response = urlopen(request, context=Crawler.myssl)
                 Crawler.crawledLinks.add(link)
@@ -29,7 +33,7 @@ class Crawler:
             Crawler.errorLinks.add(link)
 
     @staticmethod
-    def enqueueLinks(links, linksToCrawl):
+    def enqueueLinks(links, linksToCrawl: Queue):
         for link in links:
             if (urljoin(Crawler.base_url, link.get('href')) not in Crawler.crawledLinks):
                 if (urljoin(Crawler.base_url, link.get('href')) not in linksToCrawl):
