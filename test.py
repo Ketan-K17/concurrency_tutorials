@@ -1,39 +1,17 @@
-import timeit
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import ProcessPoolExecutor
-import math
+import logging
+from multiprocessing import Pool
 
-PRIMES = [
-    112272535095293,
-    112582705942171,
-    112272535095293,
-    115280095190773,
-    115797848077099,
-    1099726899285419
-]
+def init_worker():
+    logging.basicConfig(filename='myapp.log', level=logging.INFO, format='%(processName)-10s %(asctime)s:%(levelname)s:%(message)s')
 
-def is_prime(n):
-    if n % 2 == 0:
-        return False
-
-    sqrt_n = int(math.floor(math.sqrt(n)))
-    for i in range(3, sqrt_n + 1, 2):
-        if n % i == 0:
-            return False
-    return True
+def myTask(n):
+    logging.info("{} being processed".format(n))
+    logging.info("Final Result: {}".format(n*2))
+    return n*2
 
 def main():
-    t1 = timeit.default_timer()
-    with ProcessPoolExecutor(max_workers=4) as executor:
-        for number, prime in zip(PRIMES, executor.map(is_prime, PRIMES)):
-            print('%d is prime: %s' % (number, prime))
-    print("{} Seconds Needed for ProcessPoolExecutor".format(timeit.default_timer() - t1))
-
-    t2 = timeit.default_timer()
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        for number, prime in zip(PRIMES, executor.map(is_prime, PRIMES)):
-            print('%d is prime: %s' % (number, prime))
-    print("{} Seconds Needed for ThreadPoolExecutor".format(timeit.default_timer() - t2))
+    with Pool(4, initializer=init_worker) as p:
+        p.map(myTask, [2,3,4,5,6,])
 
 if __name__ == '__main__':
     main()
